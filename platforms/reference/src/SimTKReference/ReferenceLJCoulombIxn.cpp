@@ -27,6 +27,7 @@
 #include <complex>
 #include <algorithm>
 #include <iostream>
+#include <unordered_set>
 
 #include "SimTKOpenMMUtilities.h"
 #include "ReferenceLJCoulombIxn.h"
@@ -41,6 +42,8 @@
 using std::set;
 using std::vector;
 using namespace OpenMM;
+
+typedef int    ivec[3];
 
 /**---------------------------------------------------------------------------------------
 
@@ -189,7 +192,7 @@ void ReferenceLJCoulombIxn::setPeriodicExceptions(bool periodic) {
 
 void ReferenceLJCoulombIxn::calculateEwaldIxn(int numberOfAtoms, vector<Vec3>& atomCoordinates,
                                               vector<vector<double> >& atomParameters, vector<set<int> >& exclusions,
-                                              vector<Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal) const {
+                                              vector<Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal,double* vext_grid) const {
     typedef std::complex<double> d_complex;
 
     static const double epsilon     =  1.0;
@@ -206,6 +209,9 @@ void ReferenceLJCoulombIxn::calculateEwaldIxn(int numberOfAtoms, vector<Vec3>& a
     double recipDispersionEnergy    = 0.0;
     double totalRecipEnergy         = 0.0;
     double vdwEnergy                = 0.0;
+
+    bool compute_vext_grid=false;
+    if(vext_grid){ compute_vext_grid=true; }
 
     // A couple of sanity checks for
     if(ljpme && useSwitch)
@@ -240,7 +246,11 @@ void ReferenceLJCoulombIxn::calculateEwaldIxn(int numberOfAtoms, vector<Vec3>& a
     if (pme && includeReciprocal) {
         pme_t          pmedata; /* abstract handle for PME data */
 
-        pme_init(&pmedata,alphaEwald,numberOfAtoms,meshDim,5,1);
+        // if computing vext grid, call overloaded pme_init for this setup
+        if(compute_vext_grid)
+            { pme_init(&pmedata,alphaEwald,numberOfAtoms,meshDim,5,1,compute_vext_grid);}
+        else
+            { pme_init(&pmedata,alphaEwald,numberOfAtoms,meshDim,5,1);}
 
         vector<double> charges(numberOfAtoms);
         for (int i = 0; i < numberOfAtoms; i++)
@@ -250,6 +260,13 @@ void ReferenceLJCoulombIxn::calculateEwaldIxn(int numberOfAtoms, vector<Vec3>& a
         if (totalEnergy)
             *totalEnergy += recipEnergy;
 
+        // Computing Vext grid.  We need to copy over several pme data structures and save
+        // locally before call to pme_destroy(pmedata)
+        if (compute_vext_grid)
+        {
+            // save electrostatic potential on PME grid, before pme_destroy
+            pme_copy_grid_real( pmedata, vext_grid );
+        }
         pme_destroy(pmedata);
 
         if (ljpme) {
@@ -542,11 +559,11 @@ void ReferenceLJCoulombIxn::calculateEwaldIxn(int numberOfAtoms, vector<Vec3>& a
 
 void ReferenceLJCoulombIxn::calculatePairIxn(int numberOfAtoms, vector<Vec3>& atomCoordinates,
                                              vector<vector<double> >& atomParameters, vector<set<int> >& exclusions,
-                                             vector<Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal) const {
+                                             vector<Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal, double* vext_grid) const {
 
     if (ewald || pme || ljpme) {
         calculateEwaldIxn(numberOfAtoms, atomCoordinates, atomParameters, exclusions, forces,
-                          totalEnergy, includeDirect, includeReciprocal);
+                          totalEnergy, includeDirect, includeReciprocal, vext_grid);
         return;
     }
     if (!includeDirect)

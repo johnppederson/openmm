@@ -57,11 +57,19 @@ public:
     bool supportsDoublePrecision() const;
     void contextCreated(ContextImpl& context, const std::map<std::string, std::string>& properties) const;
     void contextDestroyed(ContextImpl& context) const;
+
+    static const std::string& ReferenceVextGrid() {
+        static const std::string key = "ReferenceVextGrid";
+        return key;
+    }
+
+    void setPropertyValue(Context& context, const std::string& property, const std::string& value);
+    const std::string& getPropertyValue(const Context& context, const std::string& property) const;
 };
 
 class OPENMM_EXPORT ReferencePlatform::PlatformData {
 public:
-    PlatformData(const System& system);
+    PlatformData(const System& system, bool ReferenceVextGrid);
     ~PlatformData();
     int numParticles;
     long long stepCount;
@@ -73,6 +81,10 @@ public:
     Vec3* periodicBoxVectors;
     ReferenceConstraints* constraints;
     std::map<std::string, double>* energyParameterDerivatives;
+
+    std::map<std::string, std::string> propertyValues;
+    double* vext_grid;
+    int gridsize;
 };
 } // namespace OpenMM
 

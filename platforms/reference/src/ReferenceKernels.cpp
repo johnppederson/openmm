@@ -103,6 +103,24 @@ static vector<Vec3>& extractVelocities(ContextImpl& context) {
     return *data->velocities;
 }
 
+bool extractReferenceVextGrid(ContextImpl& context) {
+    const Context& owner = context.getOwner();
+    ReferencePlatform& platform = reinterpret_cast<ReferencePlatform&>(context.getPlatform());
+    string ReferenceVextGridValue = platform.getPropertyValue(owner, platform.ReferenceVextGrid() );
+    return (ReferenceVextGridValue == "true");
+}
+
+
+static double* extractVext_grid(ContextImpl& context) {
+    ReferencePlatform::PlatformData* data = reinterpret_cast<ReferencePlatform::PlatformData*>(context.getPlatformData());
+    return data->vext_grid;
+}
+
+static int extractGridsize(ContextImpl& context) {
+    ReferencePlatform::PlatformData* data = reinterpret_cast<ReferencePlatform::PlatformData*>(context.getPlatformData());
+    return data->gridsize;
+}
+
 static vector<Vec3>& extractForces(ContextImpl& context) {
     ReferencePlatform::PlatformData* data = reinterpret_cast<ReferencePlatform::PlatformData*>(context.getPlatformData());
     return *data->forces;
@@ -255,6 +273,13 @@ void ReferenceUpdateStateDataKernel::setVelocities(ContextImpl& context, const s
         velData[i][1] = velocities[i][1];
         velData[i][2] = velocities[i][2];
     }
+}
+
+void ReferenceUpdateStateDataKernel::getVext_grid(ContextImpl& context, std::vector<double>& vext_grid) {
+    double* vext_gridData = extractVext_grid(context);
+    int gridsize = extractGridsize(context);
+    for (int i = 0; i < gridsize; ++i)
+        vext_grid.push_back(vext_gridData[i]);
 }
 
 void ReferenceUpdateStateDataKernel::getForces(ContextImpl& context, std::vector<Vec3>& forces) {
@@ -978,6 +1003,9 @@ double ReferenceCalcNonbondedForceKernel::execute(ContextImpl& context, bool inc
     computeParameters(context);
     vector<Vec3>& posData = extractPositions(context);
     vector<Vec3>& forceData = extractForces(context);
+    // if computing vext_grid
+    bool ReferenceVextGrid = extractReferenceVextGrid(context);
+
     double energy = 0;
     ReferenceLJCoulombIxn clj;
     bool periodic = (nonbondedMethod == CutoffPeriodic);
@@ -1006,7 +1034,7 @@ double ReferenceCalcNonbondedForceKernel::execute(ContextImpl& context, bool inc
     }
     if (useSwitchingFunction)
         clj.setUseSwitchingFunction(switchingDistance);
-    clj.calculatePairIxn(numParticles, posData, particleParamArray, exclusions, forceData, includeEnergy ? &energy : NULL, includeDirect, includeReciprocal);
+    clj.calculatePairIxn(numParticles, posData, particleParamArray, exclusions, forceData, includeEnergy ? &energy : NULL, includeDirect, includeReciprocal, ReferenceVextGrid ? extractVext_grid(context) : NULL);
     if (includeDirect) {
         ReferenceBondForce refBondForce;
         ReferenceLJCoulomb14 nonbonded14;

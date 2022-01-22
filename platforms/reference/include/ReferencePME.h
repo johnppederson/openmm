@@ -39,7 +39,7 @@
 namespace OpenMM {
 
 typedef double rvec[3];
-
+typedef int    ivec[3];
 
 typedef struct pme *
 pme_t;
@@ -65,6 +65,16 @@ pme_init(pme_t* ppme,
          const int ngrid[3],
          int pme_order,
          double epsilon_r);
+
+/*  Overloaded init, call if we are computing vext grid */
+int OPENMM_EXPORT
+pme_init(pme_t* ppme,
+         double ewaldcoeff,
+         int natoms,
+         const int ngrid[3],
+         int pme_order,
+         double epsilon_r,
+         bool compute_grid);
 
 /*
  * Evaluate reciprocal space PME energy and forces.
@@ -108,7 +118,9 @@ pme_exec_dpme(pme_t pme,
               double* energy);
 
 
-
+int OPENMM_EXPORT
+pme_copy_grid_real(pme_t pme,
+                   double* vext);
 
 /* Release all memory in pme structure */
 int OPENMM_EXPORT

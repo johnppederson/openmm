@@ -38,6 +38,8 @@
 
 namespace OpenMM {
 
+typedef int    ivec[3];
+
 class CpuNonbondedForce {
     public:
 
@@ -146,12 +148,14 @@ class CpuNonbondedForce {
                                  exclusions[atomIndex] contains the list of exclusions for that atom
          @param forces           force array (forces added)
          @param totalEnergy      total energy
-            
+         @param vext_grid        vext array (if requested)
+
+   
          --------------------------------------------------------------------------------------- */
 
       void calculateReciprocalIxn(int numberOfAtoms, float* posq, const std::vector<Vec3>& atomCoordinates,
                                   const std::vector<std::pair<float, float> >& atomParameters, const std::vector<float> &C6params,
-                                  const std::vector<std::set<int> >& exclusions, std::vector<Vec3>& forces, double* totalEnergy) const;
+                                  const std::vector<std::set<int> >& exclusions, std::vector<Vec3>& forces, double* totalEnergy, double* vext_grid) const;
       
       /**---------------------------------------------------------------------------------------
       

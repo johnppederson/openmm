@@ -56,6 +56,11 @@ const vector<Vec3>& State::getForces() const {
         throw OpenMMException("Invoked getForces() on a State which does not contain forces.");
     return forces;
 }
+const vector<double>& State::getVext_grid() const {
+    if ((types&Vext_grids) == 0)
+        throw OpenMMException("Invoked getVext_grid() on a State which does not contain vext_grid.");
+    return vext_grid;
+}
 double State::getKineticEnergy() const {
     if ((types&Energy) == 0)
         throw OpenMMException("Invoked getKineticEnergy() on a State which does not contain energies.");
@@ -116,6 +121,11 @@ void State::setForces(const std::vector<Vec3>& force) {
     types |= Forces;
 }
 
+void State::setVext_grid(const std::vector<double>& v_grid) {
+    vext_grid = v_grid;
+    types |= Vext_grids;
+}
+
 void State::setParameters(const std::map<std::string, double>& params) {
     parameters = params;
     types |= Parameters;
@@ -155,6 +165,10 @@ void State::StateBuilder::setVelocities(const std::vector<Vec3>& vel) {
 
 void State::StateBuilder::setForces(const std::vector<Vec3>& force) {
     state.setForces(force);
+}
+
+void State::StateBuilder::setVext_grid(const std::vector<double>& vext_grid) {
+    state.setVext_grid(vext_grid);
 }
 
 void State::StateBuilder::setParameters(const std::map<std::string, double>& params) {

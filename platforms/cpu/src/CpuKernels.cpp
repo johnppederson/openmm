@@ -71,6 +71,23 @@ static vector<Vec3>& extractForces(ContextImpl& context) {
     return *data->forces;
 }
 
+bool extractReferenceVextGrid(ContextImpl& context) {
+    ReferencePlatform::PlatformData* data = reinterpret_cast<ReferencePlatform::PlatformData*>(context.getPlatformData());
+    ReferencePlatform& platform = reinterpret_cast<ReferencePlatform&>(context.getPlatform());
+    std::map<std::string, std::string>& properties = data->propertyValues;
+
+    string ReferenceVextGridValue = (properties.find(platform.ReferenceVextGrid()) == properties.end() ?
+            platform.getPropertyDefaultValue(platform.ReferenceVextGrid()) : properties.find(platform.ReferenceVextGrid())->second);
+    transform(ReferenceVextGridValue.begin(), ReferenceVextGridValue.end(), ReferenceVextGridValue.begin(), ::tolower);
+    return (ReferenceVextGridValue == "true");
+}
+
+static double* extractVext_grid(ContextImpl& context) {
+    ReferencePlatform::PlatformData* data = reinterpret_cast<ReferencePlatform::PlatformData*>(context.getPlatformData());
+    return data->vext_grid;
+}
+
+
 static Vec3& extractBoxSize(ContextImpl& context) {
     ReferencePlatform::PlatformData* data = reinterpret_cast<ReferencePlatform::PlatformData*>(context.getPlatformData());
     return *data->periodicBoxSize;
@@ -648,6 +665,10 @@ double CpuCalcNonbondedForceKernel::execute(ContextImpl& context, bool includeFo
             }
         }
     }
+
+    // if computing vext_grid
+    bool ReferenceVextGrid = extractReferenceVextGrid(context);
+
     computeParameters(context, true);
     copyChargesToPosq(context, charges, chargePosqIndex);
     AlignedArray<float>& posq = data.posq;
@@ -694,7 +715,11 @@ double CpuCalcNonbondedForceKernel::execute(ContextImpl& context, bool includeFo
             }
         }
         else
-            nonbonded->calculateReciprocalIxn(numParticles, &posq[0], posData, particleParams, C6params, exclusions, forceData, includeEnergy ? &nonbondedEnergy : NULL);
+            nonbonded->calculateReciprocalIxn(numParticles, &posq[0], posData, particleParams, C6params, exclusions, forceData, includeEnergy ? &nonbondedEnergy : NULL, ReferenceVextGrid ? extractVext_grid(context) : NULL );
+    }
+    energy += nonbondedEnergy;
+    if (includeDirect) {
+
     }
     energy += nonbondedEnergy;
     if (includeDirect) {

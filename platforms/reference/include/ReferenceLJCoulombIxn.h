@@ -185,8 +185,8 @@ class ReferenceLJCoulombIxn {
           
       void calculatePairIxn(int numberOfAtoms, std::vector<OpenMM::Vec3>& atomCoordinates,
                             std::vector<std::vector<double> >& atomParameters, std::vector<std::set<int> >& exclusions,
-                            std::vector<OpenMM::Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal) const;
-
+                            std::vector<OpenMM::Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal,
+                            double* vext_grid ) const;
 private:
       /**---------------------------------------------------------------------------------------
       
@@ -206,7 +206,8 @@ private:
           
       void calculateEwaldIxn(int numberOfAtoms, std::vector<OpenMM::Vec3>& atomCoordinates,
                              std::vector<std::vector<double> >& atomParameters, std::vector<std::set<int> >& exclusions,
-                             std::vector<OpenMM::Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal) const;
+                             std::vector<OpenMM::Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal,
+                             double* vext_grid) const;
 };
 
 } // namespace OpenMM

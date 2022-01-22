@@ -176,6 +176,11 @@ public:
      * @param forces  on exit, this contains the forces
      */
     void getForces(ContextImpl& context, std::vector<Vec3>& forces);
+
+    void getVext_grid(ContextImpl& context, std::vector<double>& vext_grid){
+        throw OpenMMException("can only call getVext_grid with CPU or Reference Platform!");
+    }
+
     /**
      * Get the current derivatives of the energy with respect to context parameters.
      *

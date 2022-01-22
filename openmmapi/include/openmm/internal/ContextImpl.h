@@ -131,6 +131,12 @@ public:
      */
     void getForces(std::vector<Vec3>& forces);
     /**
+    * Get the external potential grid for QM/MM
+    *      
+    * @param vext_grid  on exit, this contains the external potential
+    */
+    void getVext_grid(std::vector<double>& vext_grid);
+    /**
      * Get the set of all adjustable parameters and their values
      */
     const std::map<std::string, double>& getParameters() const;

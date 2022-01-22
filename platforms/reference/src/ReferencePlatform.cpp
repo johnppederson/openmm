@@ -33,6 +33,7 @@
 #include "ReferenceKernelFactory.h"
 #include "ReferenceKernels.h"
 #include "openmm/internal/ContextImpl.h"
+#include "openmm/OpenMMException.h"
 #include "SimTKOpenMMRealType.h"
 #include "openmm/Vec3.h"
 
@@ -76,6 +77,8 @@ ReferencePlatform::ReferencePlatform() {
     registerKernelFactory(ApplyAndersenThermostatKernel::Name(), factory);
     registerKernelFactory(ApplyMonteCarloBarostatKernel::Name(), factory);
     registerKernelFactory(RemoveCMMotionKernel::Name(), factory);
+    platformProperties.push_back(ReferenceVextGrid());
+    setPropertyDefaultValue(ReferenceVextGrid(), "false");
 }
 
 double ReferencePlatform::getSpeed() const {
@@ -86,8 +89,40 @@ bool ReferencePlatform::supportsDoublePrecision() const {
     return true;
 }
 
+const string& ReferencePlatform::getPropertyValue(const Context& context, const string& property) const {
+    const ContextImpl& impl = getContextImpl(context);
+    const PlatformData* data = reinterpret_cast<const PlatformData*>(impl.getPlatformData());
+    string propertyName = property;
+    if (deprecatedPropertyReplacements.find(property) != deprecatedPropertyReplacements.end())
+        propertyName = deprecatedPropertyReplacements.find(property)->second;
+    map<string, string>::const_iterator value = data->propertyValues.find(propertyName);
+    if (value != data->propertyValues.end())
+        return value->second;
+    return Platform::getPropertyValue(context, property);
+}
+
+
+void ReferencePlatform::setPropertyValue(Context& context, const string& property, const string& value) {
+    ContextImpl& impl = getContextImpl(context);
+    PlatformData* data = reinterpret_cast<PlatformData*>(impl.getPlatformData());
+    string propertyName = property;
+    if (deprecatedPropertyReplacements.find(property) != deprecatedPropertyReplacements.end())
+        propertyName = deprecatedPropertyReplacements.find(property)->second;
+    for (auto& prop : platformProperties){
+        if (prop == propertyName) {
+            data->propertyValues[propertyName] = value;
+            return;
+        }
+    }
+    throw OpenMMException("setPropertyValue: Illegal property name");
+}
+
 void ReferencePlatform::contextCreated(ContextImpl& context, const map<string, string>& properties) const {
-    context.setPlatformData(new PlatformData(context.getSystem()));
+    // check properties to see if we are asking for VextGrid calculation ...
+    string ReferenceVextGridValue = (properties.find(ReferenceVextGrid()) == properties.end() ?
+            getPropertyDefaultValue(ReferenceVextGrid()) : properties.find(ReferenceVextGrid())->second);    
+    transform(ReferenceVextGridValue.begin(), ReferenceVextGridValue.end(), ReferenceVextGridValue.begin(), ::tolower);
+    context.setPlatformData(new PlatformData(context.getSystem(), (ReferenceVextGridValue == "true") ));
 }
 
 void ReferencePlatform::contextDestroyed(ContextImpl& context) const {
@@ -95,7 +130,7 @@ void ReferencePlatform::contextDestroyed(ContextImpl& context) const {
     delete data;
 }
 
-ReferencePlatform::PlatformData::PlatformData(const System& system) : time(0.0), stepCount(0), numParticles(system.getNumParticles()) {
+ReferencePlatform::PlatformData::PlatformData(const System& system, bool ReferenceVextGridValue ) : time(0.0), stepCount(0), numParticles(system.getNumParticles()) {
     positions = new vector<Vec3>(numParticles);
     velocities = new vector<Vec3>(numParticles);
     forces = new vector<Vec3>(numParticles);
@@ -103,6 +138,23 @@ ReferencePlatform::PlatformData::PlatformData(const System& system) : time(0.0),
     periodicBoxVectors = new Vec3[3];
     constraints = new ReferenceConstraints(system);
     energyParameterDerivatives = new map<string, double>();
+
+    propertyValues[ReferenceVextGrid()] = ReferenceVextGridValue ? "true" : "false" ;
+    if ( ReferenceVextGridValue ){
+        // need grid info to allocate vext_grid , need NonbondForce for this...
+        double alpha;
+        int nx, ny, nz;
+        int numForces = system.getNumForces();
+        for (int i=0;i<numForces;i++){
+            NonbondedForce* nbforce = dynamic_cast<NonbondedForce*>(const_cast<Force*>(&system.getForce(i)) );
+            if( nbforce ){
+                nbforce->getPMEParameters( alpha , nx , ny , nz );
+            }
+        }
+        // Allocate vext grid storage
+        vext_grid = (double *) malloc(sizeof(double)*nx*ny*nz);
+        gridsize = nx * ny * nz;
+    }
 }
 
 ReferencePlatform::PlatformData::~PlatformData() {
@@ -113,4 +165,7 @@ ReferencePlatform::PlatformData::~PlatformData() {
     delete[] periodicBoxVectors;
     delete constraints;
     delete energyParameterDerivatives;
+    if ( propertyValues[ReferenceVextGrid()] == "true" ){
+       free(vext_grid);
+    }
 }
