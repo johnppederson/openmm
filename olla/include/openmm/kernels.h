@@ -193,6 +193,8 @@ public:
 
     virtual void getVext_grid(ContextImpl& context, std::vector<double>& vext_grid) = 0;
 
+    // get boolean setting for whether ReferenceVext is turned on in platform data
+    virtual bool getReferenceVext_bool(ContextImpl& context) = 0;
     /**
      * Get the current derivatives of the energy with respect to context parameters.
      *

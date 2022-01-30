@@ -173,6 +173,8 @@ public:
     * @param vext_grid  on exit, this contains the external potential
     */
     void getVext_grid(ContextImpl& context, std::vector<double>& vext_grid);
+    // get boolean setting for whether ReferenceVext is turned on in platform data
+    bool getReferenceVext_bool(ContextImpl& context );
     /**
      * Set the velocities of all particles.
      *

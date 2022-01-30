@@ -96,6 +96,13 @@ State Context::getState(int types, bool enforcePeriodicBox, int groups) const {
     bool includeParameterDerivs = types&State::ParameterDerivatives;
     bool includeVext_grid = types&State::Vext_grids;
     bool needForcesForEnergy = (includeEnergy && getIntegrator().kineticEnergyRequiresForce());
+    // ReferenceVext_bool signals whether ReferencePlatformData is initialized to compute Vextgrid ..
+    if (includeVext_grid) {
+       bool ReferenceVext_bool = impl->getReferenceVext_bool();
+       if(ReferenceVext_bool==false)
+           throw OpenMMException("Cannot call getVext_grids=True in getState without setting 'ReferenceVextGrid': 'true' in Platform data");       
+    }
+
     if (includeForces || includeEnergy || includeParameterDerivs || includeVext_grid ) {
         double energy = impl->calcForcesAndEnergy(includeForces || needForcesForEnergy || includeParameterDerivs, includeEnergy, groups);
         if (includeEnergy)
@@ -105,6 +112,7 @@ State Context::getState(int types, bool enforcePeriodicBox, int groups) const {
             impl->getForces(forces);
             builder.setForces(forces);
         }
+
         // Vext_grid for QM/MM
         if (includeVext_grid) {
             vector<double> vext_grid;

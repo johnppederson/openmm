@@ -154,6 +154,9 @@ public:
     void getVext_grid(ContextImpl& context, std::vector<double>& vext_grid){
         throw OpenMMException("can only call getVext_grid with CPU or Reference Platform!");
     }
+    bool getReferenceVext_bool(ContextImpl& context){
+        throw OpenMMException("can only call getReferenceVext_bool with CPU or Reference Platform!");
+    }
     /**
      * Get the current derivatives of the energy with respect to context parameters.
      *

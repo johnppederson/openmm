@@ -140,6 +140,7 @@ ReferencePlatform::PlatformData::PlatformData(const System& system, bool Referen
     energyParameterDerivatives = new map<string, double>();
 
     propertyValues[ReferenceVextGrid()] = ReferenceVextGridValue ? "true" : "false" ;
+
     if ( ReferenceVextGridValue ){
         // need grid info to allocate vext_grid , need NonbondForce for this...
         double alpha;
@@ -149,6 +150,10 @@ ReferencePlatform::PlatformData::PlatformData(const System& system, bool Referen
             NonbondedForce* nbforce = dynamic_cast<NonbondedForce*>(const_cast<Force*>(&system.getForce(i)) );
             if( nbforce ){
                 nbforce->getPMEParameters( alpha , nx , ny , nz );
+                // if alpha=0 (default), then these parameters weren't set so throw exception...
+                if ( alpha < 1e-6 ){
+                    throw OpenMMException("must setPMEParameters in NonbondedForce to compute Vext Grid...");
+                }    
             }
         }
         // Allocate vext grid storage

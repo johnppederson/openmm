@@ -247,6 +247,10 @@ void ContextImpl::getForces(std::vector<Vec3>& forces) {
     updateStateDataKernel.getAs<UpdateStateDataKernel>().getForces(*this, forces);
 }
 
+bool ContextImpl::getReferenceVext_bool() {
+    return updateStateDataKernel.getAs<UpdateStateDataKernel>().getReferenceVext_bool(*this);
+}
+
 void ContextImpl::getVext_grid(std::vector<double>& vext_grid) {
     updateStateDataKernel.getAs<UpdateStateDataKernel>().getVext_grid(*this, vext_grid);
 }

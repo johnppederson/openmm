@@ -275,6 +275,10 @@ void ReferenceUpdateStateDataKernel::setVelocities(ContextImpl& context, const s
     }
 }
 
+bool ReferenceUpdateStateDataKernel::getReferenceVext_bool(ContextImpl& context ) {
+    return extractReferenceVextGrid(context);
+}
+
 void ReferenceUpdateStateDataKernel::getVext_grid(ContextImpl& context, std::vector<double>& vext_grid) {
     double* vext_gridData = extractVext_grid(context);
     int gridsize = extractGridsize(context);
