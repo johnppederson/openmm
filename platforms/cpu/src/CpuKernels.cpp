@@ -717,10 +717,7 @@ double CpuCalcNonbondedForceKernel::execute(ContextImpl& context, bool includeFo
         else
             nonbonded->calculateReciprocalIxn(numParticles, &posq[0], posData, particleParams, C6params, exclusions, forceData, includeEnergy ? &nonbondedEnergy : NULL, ReferenceVextGrid ? extractVext_grid(context) : NULL );
     }
-    energy += nonbondedEnergy;
-    if (includeDirect) {
 
-    }
     energy += nonbondedEnergy;
     if (includeDirect) {
         ReferenceLJCoulomb14 nonbonded14;
