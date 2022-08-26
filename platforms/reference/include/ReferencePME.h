@@ -74,7 +74,7 @@ pme_init(pme_t* ppme,
          const int ngrid[3],
          int pme_order,
          double epsilon_r,
-         bool compute_grid);
+         bool compute_vext_grid);
 
 /*
  * Evaluate reciprocal space PME energy and forces.
@@ -120,7 +120,7 @@ pme_exec_dpme(pme_t pme,
 
 int OPENMM_EXPORT
 pme_copy_grid_real(pme_t pme,
-                   double* vext);
+                   std::vector<double>& vext);
 
 /* Release all memory in pme structure */
 int OPENMM_EXPORT

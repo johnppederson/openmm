@@ -153,11 +153,11 @@ ReferencePlatform::PlatformData::PlatformData(const System& system, bool Referen
                 // if alpha=0 (default), then these parameters weren't set so throw exception...
                 if ( alpha < 1e-6 ){
                     throw OpenMMException("must setPMEParameters in NonbondedForce to compute Vext Grid...");
-                }    
+                }
             }
         }
         // Allocate vext grid storage
-        vext_grid = (double *) malloc(sizeof(double)*nx*ny*nz);
+        vext_grid = new vector<double>;
         gridsize = nx * ny * nz;
     }
 }
@@ -171,6 +171,6 @@ ReferencePlatform::PlatformData::~PlatformData() {
     delete constraints;
     delete energyParameterDerivatives;
     if ( propertyValues[ReferenceVextGrid()] == "true" ){
-       free(vext_grid);
+       delete vext_grid;
     }
 }

@@ -121,8 +121,8 @@ void State::setForces(const std::vector<Vec3>& force) {
     types |= Forces;
 }
 
-void State::setVext_grid(const std::vector<double>& v_grid) {
-    vext_grid = v_grid;
+void State::setVext_grid(const std::vector<double>& vext) {
+    vext_grid = vext;
     types |= Vext_grids;
 }
 
@@ -167,8 +167,8 @@ void State::StateBuilder::setForces(const std::vector<Vec3>& force) {
     state.setForces(force);
 }
 
-void State::StateBuilder::setVext_grid(const std::vector<double>& vext_grid) {
-    state.setVext_grid(vext_grid);
+void State::StateBuilder::setVext_grid(const std::vector<double>& vext) {
+    state.setVext_grid(vext);
 }
 
 void State::StateBuilder::setParameters(const std::map<std::string, double>& params) {

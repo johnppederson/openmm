@@ -81,9 +81,8 @@ public:
     Vec3* periodicBoxVectors;
     ReferenceConstraints* constraints;
     std::map<std::string, double>* energyParameterDerivatives;
-
     std::map<std::string, std::string> propertyValues;
-    double* vext_grid;
+    std::vector<double>* vext_grid;
     int gridsize;
 };
 } // namespace OpenMM

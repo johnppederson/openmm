@@ -111,9 +111,9 @@ bool extractReferenceVextGrid(ContextImpl& context) {
 }
 
 
-static double* extractVext_grid(ContextImpl& context) {
+static vector<double>& extractVext_grid(ContextImpl& context) {
     ReferencePlatform::PlatformData* data = reinterpret_cast<ReferencePlatform::PlatformData*>(context.getPlatformData());
-    return data->vext_grid;
+    return *data->vext_grid;
 }
 
 static int extractGridsize(ContextImpl& context) {
@@ -279,11 +279,12 @@ bool ReferenceUpdateStateDataKernel::getReferenceVext_bool(ContextImpl& context 
     return extractReferenceVextGrid(context);
 }
 
-void ReferenceUpdateStateDataKernel::getVext_grid(ContextImpl& context, std::vector<double>& vext_grid) {
-    double* vext_gridData = extractVext_grid(context);
+void ReferenceUpdateStateDataKernel::getVext_grid(ContextImpl& context, vector<double>& vext_grid) {
+    vector<double>& vext_gridData = extractVext_grid(context);
     int gridsize = extractGridsize(context);
+    vext_grid.resize(gridsize);
     for (int i = 0; i < gridsize; ++i)
-        vext_grid.push_back(vext_gridData[i]);
+        vext_grid[i] = vext_gridData[i];
 }
 
 void ReferenceUpdateStateDataKernel::getForces(ContextImpl& context, std::vector<Vec3>& forces) {
@@ -1038,7 +1039,7 @@ double ReferenceCalcNonbondedForceKernel::execute(ContextImpl& context, bool inc
     }
     if (useSwitchingFunction)
         clj.setUseSwitchingFunction(switchingDistance);
-    clj.calculatePairIxn(numParticles, posData, particleParamArray, exclusions, forceData, includeEnergy ? &energy : NULL, includeDirect, includeReciprocal, ReferenceVextGrid ? extractVext_grid(context) : NULL);
+    clj.calculatePairIxn(numParticles, posData, particleParamArray, exclusions, forceData, includeEnergy ? &energy : NULL, includeDirect, includeReciprocal, extractVext_grid(context), extractReferenceVextGrid(context));
     if (includeDirect) {
         ReferenceBondForce refBondForce;
         ReferenceLJCoulomb14 nonbonded14;

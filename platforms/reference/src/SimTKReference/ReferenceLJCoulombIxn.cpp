@@ -192,7 +192,7 @@ void ReferenceLJCoulombIxn::setPeriodicExceptions(bool periodic) {
 
 void ReferenceLJCoulombIxn::calculateEwaldIxn(int numberOfAtoms, vector<Vec3>& atomCoordinates,
                                               vector<vector<double> >& atomParameters, vector<set<int> >& exclusions,
-                                              vector<Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal,double* vext_grid) const {
+                                              vector<Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal, vector<double>& vext_grid, bool referenceVext) const {
     typedef std::complex<double> d_complex;
 
     static const double epsilon     =  1.0;
@@ -211,7 +211,7 @@ void ReferenceLJCoulombIxn::calculateEwaldIxn(int numberOfAtoms, vector<Vec3>& a
     double vdwEnergy                = 0.0;
 
     bool compute_vext_grid=false;
-    if(vext_grid){ compute_vext_grid=true; }
+    if(referenceVext){ compute_vext_grid=true; }
 
     // A couple of sanity checks for
     if(ljpme && useSwitch)
@@ -559,11 +559,11 @@ void ReferenceLJCoulombIxn::calculateEwaldIxn(int numberOfAtoms, vector<Vec3>& a
 
 void ReferenceLJCoulombIxn::calculatePairIxn(int numberOfAtoms, vector<Vec3>& atomCoordinates,
                                              vector<vector<double> >& atomParameters, vector<set<int> >& exclusions,
-                                             vector<Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal, double* vext_grid) const {
+                                             vector<Vec3>& forces, double* totalEnergy, bool includeDirect, bool includeReciprocal, vector<double>& vext_grid, bool referenceVext) const {
 
     if (ewald || pme || ljpme) {
         calculateEwaldIxn(numberOfAtoms, atomCoordinates, atomParameters, exclusions, forces,
-                          totalEnergy, includeDirect, includeReciprocal, vext_grid);
+                          totalEnergy, includeDirect, includeReciprocal, vext_grid, referenceVext);
         return;
     }
     if (!includeDirect)

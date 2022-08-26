@@ -55,9 +55,9 @@ struct pme
                                         * Element (i,j,k) is accessed as:
                                         * grid[i*ngrid[1]*ngrid[2] + j*ngrid[2] + k]
                                         */
-    bool         compute_vext_grid;  // if computing vext_grid, initialize false
-    t_complex *  vext_grid;       //If we are computing electrostatic potential
-                                  // very similar data structure to grid 
+    bool         compute_vext_grid;    // if computing vext_grid, initialize false
+    t_complex *  vext_grid;            //If we are computing electrostatic potential
+                                       // very similar data structure to grid 
     d_complex *  bsplines_moduli_p[3];  /* used to calculation potential grid */
  
 
@@ -547,10 +547,9 @@ pme_reciprocal_convolution(pme_t     pme,
                     d_complex b1_b2_b3 = pme->bsplines_moduli_p[0][kx]*pme->bsplines_moduli_p[1][ky]*pme->bsplines_moduli_p[2][kz];
                     v_term  *= one_4pi_eps*exp(-factor*m2)/m2/boxfactor * b1_b2_b3;
 
-                    ptr_v->re = v_term.real() ;
-                    ptr_v->im = v_term.imag() ;
-                }                                
-
+                    ptr_v->re = v_term.real();
+                    ptr_v->im = v_term.imag();
+                }
             }
         }
     }
@@ -840,10 +839,14 @@ pme_init(pme_t *       ppme,
     /* Allocate charge grid storage */
     pme->grid        = (t_complex *)malloc(sizeof(t_complex)*ngrid[0]*ngrid[1]*ngrid[2]);
 
+    pme->compute_vext_grid = compute_vext_grid;
     if(compute_vext_grid)
     {
-        pme->compute_vext_grid = compute_vext_grid ;
         pme->vext_grid   = (t_complex *)malloc(sizeof(t_complex)*ngrid[0]*ngrid[1]*ngrid[2]);
+        for (int i=0;i<pme->ngrid[0]*pme->ngrid[1]*pme->ngrid[2];i++)
+        {
+            pme->vext_grid[i].re = pme->vext_grid[i].im = 0;
+        }
     } 
 
  
@@ -951,13 +954,14 @@ int pme_exec_dpme(pme_t       pme,
     return 0;
 }
 
-int pme_copy_grid_real( pme_t pme, double* vext ) 
-{  
+int pme_copy_grid_real( pme_t pme, vector<double>& vext ) 
+{
     int total_size = pme->ngrid[0] * pme->ngrid[1] * pme->ngrid[2];
+    vext.resize(total_size);
     for(int index=0;index<total_size;index++)
     {
-        vext[index] =  pme->vext_grid[index].re;
-  }
+        vext[index] = pme->vext_grid[index].re;
+    }
     return 0;
 }
 

@@ -155,7 +155,7 @@ class CpuNonbondedForce {
 
       void calculateReciprocalIxn(int numberOfAtoms, float* posq, const std::vector<Vec3>& atomCoordinates,
                                   const std::vector<std::pair<float, float> >& atomParameters, const std::vector<float> &C6params,
-                                  const std::vector<std::set<int> >& exclusions, std::vector<Vec3>& forces, double* totalEnergy, double* vext_grid) const;
+                                  const std::vector<std::set<int> >& exclusions, std::vector<Vec3>& forces, double* totalEnergy, std::vector<double>& vext_grid, bool referenceVext) const;
       
       /**---------------------------------------------------------------------------------------
       

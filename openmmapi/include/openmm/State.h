@@ -139,7 +139,7 @@ private:
     void setPositions(const std::vector<Vec3>& pos);
     void setVelocities(const std::vector<Vec3>& vel);
     void setForces(const std::vector<Vec3>& force);
-    void setVext_grid(const std::vector<double>& vext_grid);
+    void setVext_grid(const std::vector<double>& vext);
     void setParameters(const std::map<std::string, double>& params);
     void setEnergyParameterDerivatives(const std::map<std::string, double>& derivs);
     void setEnergy(double ke, double pe);
@@ -170,7 +170,7 @@ public:
     void setPositions(const std::vector<Vec3>& pos);
     void setVelocities(const std::vector<Vec3>& vel);
     void setForces(const std::vector<Vec3>& force);
-    void setVext_grid(const std::vector<double>& vext_grid);
+    void setVext_grid(const std::vector<double>& vext);
     void setParameters(const std::map<std::string, double>& params);
     void setEnergyParameterDerivatives(const std::map<std::string, double>& params);
     void setEnergy(double ke, double pe);

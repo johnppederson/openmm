@@ -82,9 +82,9 @@ bool extractReferenceVextGrid(ContextImpl& context) {
     return (ReferenceVextGridValue == "true");
 }
 
-static double* extractVext_grid(ContextImpl& context) {
+static vector<double>& extractVext_grid(ContextImpl& context) {
     ReferencePlatform::PlatformData* data = reinterpret_cast<ReferencePlatform::PlatformData*>(context.getPlatformData());
-    return data->vext_grid;
+    return *data->vext_grid;
 }
 
 
@@ -715,7 +715,7 @@ double CpuCalcNonbondedForceKernel::execute(ContextImpl& context, bool includeFo
             }
         }
         else
-            nonbonded->calculateReciprocalIxn(numParticles, &posq[0], posData, particleParams, C6params, exclusions, forceData, includeEnergy ? &nonbondedEnergy : NULL, ReferenceVextGrid ? extractVext_grid(context) : NULL );
+            nonbonded->calculateReciprocalIxn(numParticles, &posq[0], posData, particleParams, C6params, exclusions, forceData, includeEnergy ? &nonbondedEnergy : NULL, extractVext_grid(context), ReferenceVextGrid);
     }
 
     energy += nonbondedEnergy;
